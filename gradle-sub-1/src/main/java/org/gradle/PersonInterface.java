@@ -2,6 +2,6 @@ package org.gradle;
 
 public interface PersonInterface {
 	
-	public String getNickName();
+	public String getNickName();  
 	   
 }
