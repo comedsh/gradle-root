@@ -1,0 +1,104 @@
+apply plugin: 'maven'
+apply plugin: 'war'
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies{
+    providedRuntime 'javax.servlet:jsp-api:2.0' // 表示只是在运行时刻需要，而且在打包的时候，需要过滤掉。
+    providedRuntime 'javax.servlet:servlet-api:2.5'
+    
+    compile project(":gradle-sub-2")
+}
+
+
+// 把编译后生成的文件拷贝到build目录中去
+processResources{
+
+	// 利用命令行和用户自定义参数的方式
+	// gradle -q clean war // 表示进行本地构建
+	// gradle -q -Pbuild=dev clean war //表示进行 dev 构建
+	// gradle -q -Pbuild=release clean war // 表示进行 prod 构建
+	
+	// 用 dev 目录下的文件进行覆盖	
+	if( build == 'dev'){ 
+		
+		from file('src/main/resources/dev/database.properties')
+		from file('src/main/resources/dev/dev.specific')
+		
+		into sourceSets.main.output.resourcesDir
+		
+	}
+	
+	// 用 prod 目录下的文件进行覆盖
+	if( build == 'prod'){
+	
+		from file('src/main/resources/dev/database.properties')
+		from file('src/main/resources/dev/dev.specific')
+		
+		into sourceSets.main.output.resourcesDir
+	
+	}
+	
+	// 默认 build 为 null，即为 local build
+	// gradle 执行到这里，发现需要 exclude，那么有两种方式可以处理，1、在拷贝的时候就 exclude 2、在拷贝完了以后再删除
+	// 我觉得应该是 #2，因为从上面两个 if 逻辑可以猜测出来，local -> database.properties 并没有被 exclude，那么就意味着它一定会被被拷贝过来；既然
+	// local -> database.properties 被拷贝了过来，那么只能被 prod / dev -> database.properties 进行覆盖，那么才可以得到我们预期的 dev/prod 环境
+	// 所对应的文件；所以，这里的 processResources 的执行逻辑一定是
+	// void processResources(){
+	// 		super.processResources();
+	// 		your defined logic 
+	//}
+	
+	if( build != null){
+		
+		// tips: if the file under source folder such as src/main/resources.. direct uses the filename
+		exclude("local.specific") 
+	
+	}		
+	
+}
+
+war{
+
+	// 非常重要，在打 war 包之前，替换本地配置文件；这个 dependsOn 太他妈的关键了....
+	// dependsOn replace
+	
+}
+
+subprojects {
+
+	apply plugin: 'maven'	
+	apply plugin: 'java'
+	apply plugin: 'eclipse'
+
+	sourceCompatibility = 1.7
+
+    repositories {
+       mavenCentral()
+    }
+
+    dependencies {
+        compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+        testCompile 'junit:junit:4.8.2'
+    }
+
+    version = '1.0'
+
+    jar {
+        manifest.attributes provider: 'my cool company'
+    }
+    
+	war {
+//	    from 'src/rootContent' // adds a file-set to the root of the archive
+//	    webInf { from 'src/additionalWebInf' } // adds a file-set to the WEB-INF dir.
+//	    classpath fileTree('additionalLibs') // adds a file-set to the WEB-INF/lib dir.
+//	    classpath configurations.moreLibs // adds a configuration to the WEB-INF/lib dir.
+//	    webXml = file('src/someWeb.xml') // copies a file to WEB-INF/web.xml
+	}      
+    
+}

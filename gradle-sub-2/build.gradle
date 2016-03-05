@@ -1,0 +1,23 @@
+
+version = '1.0'
+
+dependencies{
+	
+	compile project(":gradle-sub-1")
+
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Quickstart',
+                   'Implementation-Version': version
+    }
+}
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'repos'
+       }
+    }
+}
