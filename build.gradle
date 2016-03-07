@@ -1,6 +1,8 @@
 apply plugin: 'maven'
-apply plugin: 'war'
 apply plugin: 'java'
+apply plugin: 'war'
+//apply plugin: 'eclipse'
+//apply plugin: 'eclipse-wtp'
 
 sourceCompatibility = 1.7
 
@@ -9,10 +11,17 @@ repositories {
 }
 
 dependencies{
-    providedRuntime 'javax.servlet:jsp-api:2.0' // 表示只是在运行时刻需要，而且在打包的时候，需要过滤掉。
-    providedRuntime 'javax.servlet:servlet-api:2.5'
     
     compile project(":gradle-sub-2")
+    // 特别注意，如果直接用 gradle 命令行进行构建，下面这样是完全可以注释的，Gradle 会通过项目之间的引用关系而将 gradle-sub-1 工程打包
+    // 但是 eclipse 构建打包的时候，并不会因为 sub-2 引用了 sub-1 而将 sub-1 进行打包并发布。
+    // 所以，如果要想兼容 eclipse 和 gradle 命令行打包的方式，下面这行是必须加上的。
+    compile project(":gradle-sub-1")
+    
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+    
+    providedRuntime 'javax.servlet:jsp-api:2.0' // 表示只是在运行时刻需要，而且在打包的时候，需要过滤掉。
+    providedRuntime 'javax.servlet:servlet-api:2.5'
 }
 
 
@@ -63,18 +72,13 @@ processResources{
 	
 }
 
-war{
-
-	// 非常重要，在打 war 包之前，替换本地配置文件；这个 dependsOn 太他妈的关键了....
-	// dependsOn replace
-	
-}
 
 subprojects {
 
 	apply plugin: 'maven'	
 	apply plugin: 'java'
-	apply plugin: 'eclipse'
+	//apply plugin: 'eclipse'
+	//apply plugin: 'eclipse-wtp'
 
 	sourceCompatibility = 1.7
 
@@ -92,13 +96,5 @@ subprojects {
     jar {
         manifest.attributes provider: 'my cool company'
     }
-    
-	war {
-//	    from 'src/rootContent' // adds a file-set to the root of the archive
-//	    webInf { from 'src/additionalWebInf' } // adds a file-set to the WEB-INF dir.
-//	    classpath fileTree('additionalLibs') // adds a file-set to the WEB-INF/lib dir.
-//	    classpath configurations.moreLibs // adds a configuration to the WEB-INF/lib dir.
-//	    webXml = file('src/someWeb.xml') // copies a file to WEB-INF/web.xml
-	}      
     
 }
