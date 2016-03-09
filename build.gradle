@@ -63,7 +63,7 @@ processResources{
 	// 		your defined logic 
 	//}
 	
-	if( build != null){
+	if( build != null ){
 		
 		// tips: if the file under source folder such as src/main/resources.. direct uses the filename
 		exclude("local.specific") 
@@ -72,6 +72,31 @@ processResources{
 	
 }
 
+// tar 任务，为静态资源单独打包 
+// 默认，生成 gradle-root.tar 到 build/distributions/gradle-root.tar，可通过 baseName 进行自定义
+task tarStatic(type:Tar){
+	
+	from 'src/main/webapp/resources'
+	
+	baseName = 'resources'
+	
+}
+
+println tarStatic.archiveName
+
+war{
+	// 为什么不用 build != null，试过，war 任务中不成功，还不知道原因
+	if( build == 'dev' || build == 'prod' ){
+		
+		// First step, tar the static resources
+		dependsOn(tarStatic)
+		
+		// Second Step, excludes the static resources
+		// remember, dont uses resources/* as the argument, or else it will leaves the ugly folder for u.
+		rootSpec.exclude("resources") 
+		
+	}
+}
 
 subprojects {
 
