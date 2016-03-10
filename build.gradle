@@ -89,7 +89,7 @@ war{
 	if( build == 'dev' || build == 'prod' ){
 		
 		// First step, tar the static resources
-		dependsOn(tarStatic)
+		dependsOn( tarStatic )
 		
 		// Second Step, excludes the static resources
 		// remember, dont uses resources/* as the argument, or else it will leaves the ugly folder for u.
