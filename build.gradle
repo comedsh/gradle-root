@@ -32,19 +32,25 @@ processResources{
 	// gradle -q clean war // 表示进行本地构建
 	// gradle -q -Pbuild=dev clean war //表示进行 dev 构建
 	// gradle -q -Pbuild=release clean war // 表示进行 prod 构建
+	// 特别注意，要想执行成功，这里必须加上 clean
 	
 	// 用 dev 目录下的文件进行覆盖	
-	if( build == 'dev'){ 
+	if( build == 'dev' ){ 
 		
 		from file('src/main/resources/dev/database.properties')
 		from file('src/main/resources/dev/dev.specific')
 		
 		into sourceSets.main.output.resourcesDir
 		
+		// 下面提供了另外的一种解决方案，直接将字符替换.. 用 filter 参数即可。
+		filter{
+			String line -> line.replaceAll("db_connection", "database_connection")
+		}
+		
 	}
 	
 	// 用 prod 目录下的文件进行覆盖
-	if( build == 'prod'){
+	if( build == 'prod' ){
 	
 		from file('src/main/resources/dev/database.properties')
 		from file('src/main/resources/dev/dev.specific')
